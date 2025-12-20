@@ -32,7 +32,7 @@
           ...
         }:
         let
-          naerskLib = pkgs.callPackage inputs'.naersk { };
+          naerskLib = pkgs.callPackage inputs.naersk { };
 
           fenixLib = inputs'.fenix.packages;
           rustToolchain = fenixLib.stable.toolchain;
@@ -79,12 +79,10 @@
 
           # fenix x plain
           packages.fenix-plain =
-            pkgs.makeRustPlatform
-              {
-                cargo = rustToolchain;
-                rustc = rustToolchain;
-              }
-              .buildRustPackage
+            (pkgs.makeRustPlatform {
+              cargo = rustToolchain;
+              rustc = rustToolchain;
+            }).buildRustPackage
               {
                 name = "rust-app";
                 src = ./.;
@@ -92,7 +90,7 @@
                 nativeBuildInputs = [ pkgs.pkg-config ];
                 cargoLock.lockFile = ./Cargo.lock;
               };
-          
+
           # fenix x naersk
           packages.fenix-naersk =
             (naerskLib.override {
