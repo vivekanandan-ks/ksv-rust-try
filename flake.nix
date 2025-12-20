@@ -7,6 +7,11 @@
 
     naersk.url = "github:nix-community/naersk";
 
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs =
@@ -27,10 +32,14 @@
           ...
         }:
         let
-          naerskLib = pkgs.callPackage inputs.naersk { };
+          naerskLib = pkgs.callPackage inputs'.naersk { };
+
+          fenixLib = inputs'.fenix.packages;
+          rustToolchain = fenixLib.stable.toolchain;
         in
         {
-          devShells.default = pkgs.mkShell {
+          # devshell plain
+          devShells.plain = pkgs.mkShell {
             buildInputs = with pkgs; [
               cargo
               rustc
@@ -46,7 +55,14 @@
 
           };
 
-          packages.default = pkgs.rustPlatform.buildRustPackage {
+          #devshell fenix
+          devShells.fenix = pkgs.mkShell {
+            buildInputs = [ rustToolchain ];
+            #env.RUST_SRC_PATH = "${pkgs.rust.packages.stable.rustPlatform.rustLibSrc}";
+          };
+
+          # plain
+          packages.plain = pkgs.rustPlatform.buildRustPackage {
             name = "rust-app";
             src = ./.;
             buildInputs = [ pkgs.glib ];
@@ -54,11 +70,40 @@
             cargoLock.lockFile = ./Cargo.lock;
           };
 
+          # naersk
           packages.naersk = naerskLib.buildPackage {
             src = ./.;
             buildInputs = [ pkgs.glib ];
-            nativeBuildInputs = [ pkgs.pkg-config ]; 
+            nativeBuildInputs = [ pkgs.pkg-config ];
           };
+
+          # fenix x plain
+          packages.fenix-plain =
+            pkgs.makeRustPlatform
+              {
+                cargo = rustToolchain;
+                rustc = rustToolchain;
+              }
+              .buildRustPackage
+              {
+                name = "rust-app";
+                src = ./.;
+                buildInputs = [ pkgs.glib ];
+                nativeBuildInputs = [ pkgs.pkg-config ];
+                cargoLock.lockFile = ./Cargo.lock;
+              };
+          
+          # fenix x naersk
+          package.fenix-naersk =
+            (naerskLib.override {
+              cargo = rustToolchain;
+              rustc = rustToolchain;
+            }).buildPackage
+              {
+                src = ./.;
+                buildInputs = [ pkgs.glib ];
+                nativeBuildInputs = [ pkgs.pkg-config ];
+              };
 
         };
     };
