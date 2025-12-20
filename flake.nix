@@ -94,7 +94,7 @@
               };
           
           # fenix x naersk
-          package.fenix-naersk =
+          packages.fenix-naersk =
             (naerskLib.override {
               cargo = rustToolchain;
               rustc = rustToolchain;
