@@ -68,6 +68,10 @@
             buildInputs = [ pkgs.glib ];
             nativeBuildInputs = [ pkgs.pkg-config ];
             cargoLock.lockFile = ./Cargo.lock;
+
+            meta = {
+              mainProgram = "ksv-rust-try";
+            };
           };
 
           # naersk
@@ -89,6 +93,10 @@
                 buildInputs = [ pkgs.glib ];
                 nativeBuildInputs = [ pkgs.pkg-config ];
                 cargoLock.lockFile = ./Cargo.lock;
+
+                meta = {
+                  mainProgram = "ksv-rust-try";
+                };
               };
 
           # fenix x naersk
